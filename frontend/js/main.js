@@ -3,6 +3,7 @@ import {editor_adapter} from "./editor_adapter.js";
 import {apiservice} from "./api_service.js";
 import {terminaladapter} from "./terminal_adapter.js";
 import {refreshLayout} from "./layout_manager.js";
+import {apiService} from "./api_service.js"
 
 
 class AppController {
