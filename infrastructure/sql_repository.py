@@ -8,7 +8,7 @@ class SqliteAuditRepository(IAuditRepository):
         self._initialize_database()
 
     def _initialize_database(self):
-       
+
         query_criacao_tabelas = """
           CREATE TABLE IF NOT EXISTS Users (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +17,8 @@ class SqliteAuditRepository(IAuditRepository):
             Sanity REAL NOT NULL DEFAULT 100.0,
             ReportPath varchar(255) NULL,
             CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-        ); 
+        );
+
         """
         with sqlite3.connect(self.db_path) as conn:
             conn.executescript(query_criacao_tabelas)
@@ -25,7 +26,7 @@ class SqliteAuditRepository(IAuditRepository):
     def save_audit_log(
         self, author_name: str, email: str, sanity_score: int, report_path: str
     ) -> None:
-        
+
         query_insert = "INSERT INTO Users (Name,Email,Sanity,ReportPath)values (?,?,?,?)"  # Preencha aqui
 
         with sqlite3.connect(self.db_path) as conn:
