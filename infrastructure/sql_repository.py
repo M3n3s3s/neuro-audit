@@ -35,4 +35,27 @@ class SqliteAuditRepository(IAuditRepository):
 
     def get_history_by_author(self, author_name: str) -> list:
         # Lógica de SELECT virá aqui
+
+        query_by_author =""""
+        SELECT id, name, email, sanity, reportpath, createdAt from Users where name = ? order by id desc
+        """
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(query_by_author)
+        pass
+
+    def update_author(self, ID, sanity) -> bool:
+
+
+        SET_CLAUSE = sanity
+        id =ID
+        query_update ="""
+        UPDATE Users
+        SET sanity =- {SET_CLAUSE}
+        WHERE id = {id}
+        """
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(query_update)
+            conn.commit()
         pass
