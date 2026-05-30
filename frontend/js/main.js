@@ -32,21 +32,15 @@ class AppController {
 
     bindEvents() {
         const btnAudit = document.getElementById('btn-audit');
-        if (btnAudit) {
-            btnAudit.addEventListener('click', () => this.auditarCodigoDeTeste());
-        }
+        if (btnAudit) btnAudit.addEventListener('click', () => this.auditarCodigoDeTeste());
 
         const btnOpenFolder = document.getElementById('btn-open-folder');
-        if (btnOpenFolder) {
-            btnOpenFolder.addEventListener('click', () => this.selecionarDiretorioAlvo());
-        }
+        if (btnOpenFolder) btnOpenFolder.addEventListener('click', () => this.selecionarDiretorioAlvo());
 
         const tabs = ['tab-explorer', 'tab-vcs', 'tab-analytics'];
         tabs.forEach(tabId => {
             const el = document.getElementById(tabId);
-            if (el) {
-                el.addEventListener('click', () => this.switchSidebarTab(tabId));
-            }
+            if (el) el.addEventListener('click', () => this.switchSidebarTab(tabId));
         });
     }
 
@@ -65,14 +59,11 @@ class AppController {
             activeEl.classList.add('bg-brand-highlight', 'text-black', 'font-bold');
         }
     }
-
     async handleTerminalCommand(comando) {
         if (!comando.trim()) {
             this.terminal.printPrompt();
             return;
         }
-
-        this.terminal.printLine(`\r\n[MATRIZ] A processar comando: ${comando}...`);
 
         try {
             const response = await fetch("http://127.0.0.1:5000/command", {
@@ -89,17 +80,27 @@ class AppController {
             if (typeof data === "string") {
                 saida = data;
             } else if (data && typeof data === "object") {
-                saida = data.output || data.analysis || data.resultado || data.message || JSON.stringify(data, null, 2);
+                const rawOutput = data.output || data.resultado || data.mensagem || data.error;
+
+                if (rawOutput) {
+                    saida = String(rawOutput);
+                } else {
+                    const cleanData = {};
+                    for (const key in data) {
+                        if (data[key] !== null) cleanData[key] = data[key];
+                    }
+                    saida = JSON.stringify(cleanData, null, 2);
+                }
             }
 
-            if (saida) {
-                this.terminal.printLine(saida.replace(/\n/g, "\r\n"));
+            if (saida && saida.trim() !== "") {
+                this.terminal.printLine("\r\n" + saida.replace(/\n/g, "\r\n"));
             } else {
-                this.terminal.printLine("[AVISO] Comando executado, mas o Python não retornou output visível.");
+                this.terminal.printLine("\r\n[AVISO] Comando executado, mas sem resposta de texto.");
             }
 
         } catch (error) {
-            this.terminal.printLine(`[ERRO] Falha de comunicação com o Backend.`);
+            this.terminal.printLine(`\r\n[ERRO CRÍTICO] Falha S.O.`);
         }
 
         this.terminal.printPrompt();
@@ -109,29 +110,23 @@ class AppController {
         this.terminal.printLine("\r\n[SYSTEM] A invocar o sistema operativo nativo...");
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/selecionar-pasta", {
-                method: 'GET'
-            });
-
+            const response = await fetch("http://127.0.0.1:5000/selecionar-pasta", { method: 'GET' });
             if (!response.ok) throw new Error(`Falha HTTP: ${response.status}`);
 
             const data = await response.json();
 
             if (data.status === "sucesso") {
                 this.terminal.printLine(`[OK] Workspace montado: ${data.pasta}`);
-
                 await FileExplorer.loadFiles(data.pasta);
-
             } else if (data.status === "cancelado") {
-                this.terminal.printLine("[AVISO] O utilizador cancelou a seleção.");
+                this.terminal.printLine("[AVISO] Seleção cancelada pelo utilizador.");
             } else {
-                this.terminal.printLine(`[ERRO] Não foi possível mapear o diretório.`);
+                this.terminal.printLine(`[ERRO] ${data.message || 'Erro desconhecido.'}`);
             }
-
             this.terminal.printPrompt();
 
         } catch (error) {
-            this.terminal.printLine(`\r\n[ERRO CRÍTICO] Falha de ligação à API: ${error.message}`);
+            this.terminal.printLine(`\r\n[ERRO CRÍTICO] Falha S.O: ${error.message}`);
             this.terminal.printPrompt();
         }
     }
@@ -139,7 +134,7 @@ class AppController {
     async auditarCodigoDeTeste() {
         this.terminal.printLine("\r\n[PROCESSANDO] Matriz Neural S.A.R.A ativada...");
         this.reduzirSanidadeVisual(15);
-        this.terminal.printLine("[INFO] Auditoria requer ficheiro carregado no editor.");
+        this.terminal.printLine("[INFO] Auditoria em desenvolvimento.");
         this.terminal.printPrompt();
     }
 

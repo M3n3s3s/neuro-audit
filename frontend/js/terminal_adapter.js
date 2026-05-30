@@ -4,7 +4,9 @@ export class TerminalAdapter {
             theme: { background: '#0a0a0a', foreground: '#39FF14' },
             fontFamily: 'JetBrains Mono, monospace',
             fontSize: 13,
-            cursorBlink: true
+            cursorBlink: true,
+            convertEol: true,
+            rows: 12
         });
 
         this.terminal.open(document.getElementById(divId));
@@ -17,7 +19,7 @@ export class TerminalAdapter {
                     this.onEnterCallback(this.comandoAtual);
                 }
                 this.comandoAtual = "";
-            } else if (tecla === '\x7f') { // Backspace
+            } else if (tecla === '\x7f') {
                 if (this.comandoAtual.length > 0) {
                     this.comandoAtual = this.comandoAtual.slice(0, -1);
                     this.terminal.write('\b \b');
@@ -26,18 +28,22 @@ export class TerminalAdapter {
                 this.comandoAtual += tecla;
                 this.terminal.write(tecla);
             }
+            this.terminal.scrollToBottom();
         });
     }
 
     printPrompt() {
         this.terminal.write('\r\nuser@neuro-audit:~$ ');
+        this.terminal.scrollToBottom();
     }
 
     print(texto){
         this.terminal.write(texto);
+        this.terminal.scrollToBottom();
     }
 
     printLine(texto){
         this.terminal.write(texto + '\r\n');
+        this.terminal.scrollToBottom();
     }
 }

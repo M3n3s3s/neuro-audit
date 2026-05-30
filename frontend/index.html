@@ -1,12 +1,16 @@
-<!DOCTYPE html><html class="dark" lang="en">
+<!DOCTYPE html>
+<html class="dark" lang="en">
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Neuro Audit IDE - Explorer</title>
+    <title>Neuro Audit IDE - Workspace</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
@@ -32,14 +36,22 @@
         }
     }
     </script>
+
     <style>
-        body { margin: 0; overflow: hidden; }
+        body {
+            margin: 0;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .neon-glow { box-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
     </style>
 </head>
 <body class="flex flex-col h-screen w-screen font-mono bg-brand-bg text-white antialiased">
+
     <header class="h-12 flex justify-between items-center px-4 z-50 bg-brand-bg border-b border-brand-border shrink-0">
         <div class="flex items-center gap-4 w-[260px]">
             <div class="flex items-center gap-2">
@@ -59,30 +71,28 @@
             <div class="flex items-center gap-2">
                 <span class="text-gray-400 text-[11px] uppercase tracking-widest">SANITY LEVEL</span>
                 <div class="w-32 h-2 bg-brand-border rounded-none overflow-hidden flex items-center border border-brand-border">
-                    <div class="h-full bg-brand-neon w-[85%]"></div>
+                    <div id="sanity-progress-bar" class="h-full bg-brand-neon transition-all duration-500" style="width: 85%;"></div>
                 </div>
-                <span class="text-brand-neon">85%</span>
+                <span id="sanity-value" class="text-brand-neon">85%</span>
             </div>
-            <button class="border border-brand-neon px-4 py-1 text-brand-neon bg-transparent hover:bg-brand-neon hover:text-black transition-all uppercase tracking-wider text-[12px] rounded-none neon-glow font-bold">
+            <button id="btn-audit" class="border border-brand-neon px-4 py-1 text-brand-neon bg-transparent hover:bg-brand-neon hover:text-black transition-all uppercase tracking-wider text-[12px] rounded-none neon-glow font-bold">
                 [ AUDIT ]
             </button>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden">
+
         <aside class="w-[50px] bg-brand-activity border-r border-brand-border flex flex-col items-center py-4 z-40 shrink-0">
             <nav class="flex-1 flex flex-col items-center space-y-4">
-                <a class="text-brand-neon cursor-pointer relative group flex justify-center w-full" href="#">
+                <a id="tab-explorer" class="text-brand-neon cursor-pointer relative group flex justify-center w-full" href="#">
                     <div class="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-neon"></div>
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">folder_open</span>
                 </a>
-                <a class="text-gray-500 hover:text-white cursor-pointer transition-colors w-full flex justify-center" href="#">
+                <a id="tab-vcs" class="text-gray-500 hover:text-white cursor-pointer transition-colors w-full flex justify-center" href="#">
                     <span class="material-symbols-outlined">account_tree</span>
                 </a>
-                <a class="text-gray-500 hover:text-white cursor-pointer transition-colors w-full flex justify-center" href="#">
-                    <span class="material-symbols-outlined">terminal</span>
-                </a>
-                <a class="text-gray-500 hover:text-white cursor-pointer transition-colors w-full flex justify-center" href="#">
+                <a id="tab-analytics" class="text-gray-500 hover:text-white cursor-pointer transition-colors w-full flex justify-center" href="#">
                     <span class="material-symbols-outlined">analytics</span>
                 </a>
             </nav>
@@ -95,25 +105,41 @@
 
         <aside id="sidebar-explorer" class="w-[250px] bg-brand-sidebar border-r border-brand-border flex flex-col z-30 shrink-0">
 
-            <div class="py-2 px-4 border-b border-brand-border flex justify-between items-center">
-                <span class="text-[11px] text-gray-500 uppercase tracking-widest font-bold">EXPLORER</span>
+            <div class="py-2 px-4 border-b border-brand-border flex justify-between items-center bg-[#111]">
+                <span id="root-folder-name" class="text-[11px] text-gray-300 uppercase tracking-widest font-bold truncate max-w-[120px]">
+                    EXPLORER
+                </span>
 
-                <button id="btn-open-folder" class="text-gray-400 hover:text-brand-neon transition-colors focus:outline-none" title="Selecionar Diretório">
-                    <span class="material-symbols-outlined text-[16px]">create_new_folder</span>
-                </button>
+                <div class="flex items-center gap-1">
+                    <button id="btn-new-file" class="text-gray-400 hover:text-brand-neon transition-colors p-1" title="Novo Arquivo">
+                        <span class="material-symbols-outlined text-[16px]">note_add</span>
+                    </button>
+                    <button id="btn-new-folder" class="text-gray-400 hover:text-brand-neon transition-colors p-1" title="Nova Pasta">
+                        <span class="material-symbols-outlined text-[16px]">create_new_folder</span>
+                    </button>
+                    <button id="btn-open-folder" class="text-gray-400 hover:text-brand-neon transition-colors p-1 ml-1 border-l border-brand-border" title="Abrir Workspace">
+                        <span class="material-symbols-outlined text-[16px]">folder_open</span>
+                    </button>
+                </div>
             </div>
 
             <nav class="flex-1 overflow-y-auto custom-scrollbar py-2">
-                <div id="file-tree-container" class="px-2">
-                    </div>
+                <ul id="file-tree-container" class="px-2"></ul>
             </nav>
+        </aside>
         </aside>
 
         <div class="flex-1 flex flex-col relative bg-brand-bg rounded-none min-w-0">
             <main class="flex-1 flex flex-col relative z-0 overflow-hidden rounded-none">
-                <section class="flex-1 flex flex-col min-h-0 bg-brand-bg">
-                    <div class="flex bg-brand-sidebar border-b border-brand-border h-8 items-end px-1 gap-1"></div>
-                    <div id="editor-container" class="flex-1 bg-brand-bg overflow-hidden relative"></div>
+                <section class="flex-1 flex flex-col min-h-0 bg-brand-bg relative">
+                    <div id="editor-tabs-container" class="flex bg-brand-sidebar border-b border-brand-border h-8 items-end px-1 gap-1 relative z-10">
+                        </div>
+
+                    <div id="editor-container" class="flex-1 bg-brand-bg overflow-hidden relative z-0"></div>
+
+                    <div id="image-viewer-container" class="hidden absolute top-8 left-0 right-0 bottom-0 z-20 bg-brand-bg flex items-center justify-center p-8">
+                        <img id="image-viewer-img" src="" class="max-w-full max-h-full object-contain border border-brand-border shadow-[0_0_15px_rgba(57,255,20,0.1)]">
+                    </div>
                 </section>
             </main>
         </div>
