@@ -1,22 +1,22 @@
-export class ApiService{
+class ApiService{
 
-
-    async static get() {
+    
+     static async get(endpoint) {
         try{
-            const url = await fetch(endpoint)
-
-            const data = await url.json();
+            const Response = await fetch(endpoint)
+            
+            const data = await Response.json();
 
             return data;
         }catch(error){
             console.log('Ocorreu um erro:')
         }
     }
+    
 
-
-    async static post(endpoint, payload){
+    static async  post(endpoint, payload){
         try{
-            const url = await fetch(endpoint, {
+            const Response = await fetch(endpoint, {
                 method: 'POST',
                 headers:{
                     'Content-Type': 'application/json'
@@ -24,7 +24,7 @@ export class ApiService{
                 BODY: JSON.stringify(payload)
             })
 
-            const dados = await url.JSON();
+            const dados = await Response.JSON();
 
             return data;
 
@@ -33,5 +33,7 @@ export class ApiService{
             console.log('Ocorreu um erro:', error);
         }
     }
-
+    
 }
+
+export default ApiService;
